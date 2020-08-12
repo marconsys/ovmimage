@@ -1,0 +1,49 @@
+---
+#
+# Copyright (c) 2020 Marco Napolitano
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# coded by: Marco Napolitano    email: mannysys-AaaaT-outlook.com put at sign instead of -AaaaT-
+#
+
+- name: prerequisite
+  pip:
+    name: ovirt-engine-sdk-python
+    version: 4.4.1
+
+- block:
+    - include_vars: "{{ item }}"
+      loop:
+        - "group_vars/virtcluster_{{ cluster_name }}.yml"
+        - "vault/secret_{{ cluster_name }}.yml"
+
+    - name: connection to virtualization infrastructure
+      ovirt_auth:
+        insecure: true
+        url: "{{ engine_addr }}"
+        username: "{{ engine_user }}"
+        password: "{{ engine_pass }}"
+
+    - name: download image
+      ovirt_disk:
+        auth: "{{ ovirt_auth }}"
+        id: "{{ image_id }}"
+        download_image_path: "{{ image_path }}"
+
+  always:
+    - name: oVirt disconnection
+      ovirt_auth:
+        ovirt_auth: "{{ ovirt_auth }}"
+        state: absent
+
